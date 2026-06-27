@@ -4,9 +4,9 @@ import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { OctagonAlertIcon } from 'lucide-react'
+import { FaGithub, FaGoogle } from 'react-icons/fa'
 
 import { authClient } from '@/lib/auth-client'
-import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
 import { Input } from '@/components/ui/input'
@@ -31,7 +31,6 @@ const formSchema = z.object({
 })
 
 export const SignInView = () => {
-	const router = useRouter()
 	const [error, setError] = useState<string | null>(null)
 	const [pending, setPending] = useState(false)
 
@@ -50,10 +49,31 @@ export const SignInView = () => {
 			{
 				email: data.email,
 				password: data.password,
+				callbackURL: '/',
 			},
 			{
 				onSuccess: () => {
-					router.push('/')
+					setPending(false)
+				},
+				onError: ({ error }) => {
+					setPending(false)
+					setError(error.message)
+				},
+			},
+		)
+	}
+
+	const onSocial = (provider: 'github' | 'google') => {
+		setError(null)
+		setPending(true)
+
+		authClient.signIn.social(
+			{
+				provider: provider,
+				callbackURL: '/',
+			},
+			{
+				onSuccess: () => {
 					setPending(false)
 				},
 				onError: ({ error }) => {
@@ -138,16 +158,22 @@ export const SignInView = () => {
 										type="button"
 										className="w-full"
 										disabled={pending}
+										onClick={() => {
+											onSocial('google')
+										}}
 									>
-										Google
+										<FaGoogle />
 									</Button>
 									<Button
 										variant="outline"
 										type="button"
 										className="w-full"
 										disabled={pending}
+										onClick={() => {
+											onSocial('github')
+										}}
 									>
-										GitHub
+										<FaGithub />
 									</Button>
 								</div>
 
